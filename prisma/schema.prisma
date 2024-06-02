@@ -1,0 +1,65 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model customers {
+  id        String    @id @default(uuid())
+  name      String
+  email     String
+  contact   String
+  commentId comment[]
+
+  ordersId orders[]
+  guestId  guest[]
+}
+
+model orders {
+  id        String    @id @default(uuid())
+  orderDate DateTime
+  paymentId payment[]
+ 
+  customers   customers? @relation(fields: [customersId], references: [id])
+  customersId String?
+}
+
+model payment {
+  id            String   @id @default(uuid())
+  paymentDate   DateTime
+  statusPayment String
+  orders        orders?  @relation(fields: [ordersId], references: [id])
+  ordersId      String?
+}
+
+model guest {
+  id        String    @id @default(uuid())
+  nama      String
+  location  String
+  commentId comment[]
+
+  customers   customers? @relation(fields: [customersId], references: [id])
+  customersId String?
+}
+
+model comment {
+  id        String  @id @default(uuid())
+  message   String
+  attendace Boolean
+
+  guest       guest?     @relation(fields: [guestId], references: [id])
+  guestId     String?
+  customers   customers? @relation(fields: [customersId], references: [id])
+  customersId String?
+}
+
+enum role {
+  CUSTOMER
+  ADMIN
+  SUPERADMIN
+  ZAMILMUHAHAHAHA
+}
