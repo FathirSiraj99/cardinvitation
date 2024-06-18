@@ -13,10 +13,10 @@ model customers {
     email     String
     contact   String
     commentId comment[]
-
+    pictureId picture[]
     ordersId  orders[]
     guestId   guest[]
-    account   account? @relation(fields: [accountId], references: [id])
+    account   account?  @relation(fields: [accountId], references: [id])
     accountId String?
 }
 
@@ -64,6 +64,24 @@ model account {
     password String
 
     customerId customers[]
+}
+
+model wedings {
+    id                   Int    @id @default(autoincrement())
+    npw                  String @unique
+    npp                  String @unique
+    tgl_nikah            String
+    lokasi_koordinat     String
+    link_google_calender String
+}
+
+model picture {
+    id       String @id @default(uuid())
+    fileName String
+    path     String
+
+    customers   customers? @relation(fields: [customersId], references: [id])
+    customersId String?
 }
 
 enum role {
