@@ -1,4 +1,11 @@
-import { Injectable, NotFoundException, UnauthorizedException, ConflictException, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -7,7 +14,13 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: { name: string; contact: string; email: string; username: string; password: string }) {
+  async create(data: {
+    name: string;
+    contact: string;
+    email: string;
+    username: string;
+    password: string;
+  }) {
     if (data.password.length < 6) {
       throw new UnauthorizedException('Password must be at least 6 characters');
     }
@@ -50,10 +63,15 @@ export class AuthService {
     });
 
     if (!isUserValid) {
-      throw new NotFoundException(`No user found for this username: ${loginDto.username}`);
+      throw new NotFoundException(
+        `No user found for this username: ${loginDto.username}`,
+      );
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, isUserValid.password);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      isUserValid.password,
+    );
 
     if (loginDto.password.length < 6) {
       throw new UnauthorizedException('Password must be at least 6 characters');
@@ -78,10 +96,15 @@ export class AuthService {
     });
 
     if (!isUserValid) {
-      throw new NotFoundException(`No user found for this username: ${loginDto.username}`);
+      throw new NotFoundException(
+        `No user found for this username: ${loginDto.username}`,
+      );
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, isUserValid.password);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      isUserValid.password,
+    );
 
     if (loginDto.password.length < 6) {
       throw new UnauthorizedException('Password must be at least 6 characters');
