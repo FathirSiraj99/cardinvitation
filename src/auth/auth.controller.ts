@@ -3,13 +3,20 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async create(@Body() createAuthDto: CreateAuthDto) {
-    return await this.authService.create(createAuthDto);
+  async create(@Body() data : {
+    name : string,
+    contact : string,
+    email : string,
+    username : string,
+    password : string
+  }) {
+    return await this.authService.create(data);
   }
 
   @Post('login')

@@ -10,14 +10,20 @@ import { log } from 'console';
 export class AuthService {
   constructor (private  prisma: PrismaService){}
 
-  async create(createAuthDto: CreateAuthDto) {
-   if (createAuthDto.password.length < 6) {
+  async create(data : {
+    name : string,
+    contact : string,
+    email : string,
+    username : string,
+    password : string
+  }) {
+   if (data.password.length < 6) {
       return new UnauthorizedException('password less then 6 characters')
    }
 
-   const hashPassword = await bcrypt.hash(createAuthDto.password, 10)
+   const hashPassword = await bcrypt.hash(data.password, 10)
    const isUserValid = await this.prisma.account.findUnique({
-    where : { username : createAuthDto.username}
+    where : { username : data.username}
    })
 
    if (isUserValid) {
@@ -26,10 +32,21 @@ export class AuthService {
 
    const user = await this.prisma.account.create({
       data : {
-        username : createAuthDto.username,
+        username : data.username,
         password : hashPassword
       }
    })
+
+   const customer = await this.prisma.customers.create({
+    data : {
+      name : data.name,
+      email : data.email,
+      contact : data.contact,
+      accountId : user.id
+    }
+   })
+
+   return { user : user}
 
   }
 
@@ -58,6 +75,7 @@ export class AuthService {
             where : { id: isUserValid.id}
         })
 
+
     }
 
     async login (loginDto : CreateAuthDto){
@@ -65,6 +83,7 @@ export class AuthService {
           where : {username : loginDto.username}
       })
 
+        return 
     }
 
   
