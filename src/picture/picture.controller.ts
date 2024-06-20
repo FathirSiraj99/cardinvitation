@@ -33,7 +33,7 @@ export class PictureController {
           const customersFolder = path.join(
             __dirname,
             '..',
-            'uploads',
+            'uplods',
             `user-${customersId}`,
           );
           cb(null, customersFolder);
