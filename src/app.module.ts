@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
@@ -10,10 +10,14 @@ import { CommentModule } from './comment/comment.module';
 import { AuthModule } from './auth/auth.module';
 import { PictureModule } from './picture/picture.module';
 import { WeddingsModule } from './weddings/weddings.module';
+import { APP_PIPE } from '@nestjs/core';
 
 @Module({
   imports: [CustomersModule, OrdersModule, PaymentModule, GuestModule, CommentModule, AuthModule, PictureModule, WeddingsModule],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService, PrismaService,{
+    provide: APP_PIPE,
+    useClass: ValidationPipe,
+  }],
 })
 export class AppModule {}

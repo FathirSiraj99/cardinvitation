@@ -75,6 +75,9 @@ export class AuthService {
             where : { id: isUserValid.id}
         })
 
+        return {
+            message : "halo " + user.username
+        }
 
     }
 
@@ -82,8 +85,9 @@ export class AuthService {
       const isUserValid = await this.prisma.account.findFirst({
           where : {username : loginDto.username}
       })
-
-        return 
+        
+      
+        
     }
 
   
