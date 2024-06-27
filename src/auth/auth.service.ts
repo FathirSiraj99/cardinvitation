@@ -1,121 +1,69 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-  ConflictException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { CreateAuthDto } from './dto/create-auth.dto';
+import { JwtPayload } from './interface/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService
+  ) {}
 
-  async create(data: {
-    name: string;
-    contact: string;
-    email: string;
-    username: string;
-    password: string;
-  }) {
-    if (data.password.length < 6) {
-      throw new UnauthorizedException('Password must be at least 6 characters');
+  async validateUser(username: string, password: string): Promise<any> {
+    const user = await this.prisma.account.findUnique({ where: { username } });
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const { password, ...result } = user;
+      return result;
     }
+    return null;
+  }
 
-    const hashPassword = await bcrypt.hash(data.password, 10);
-    const isUserValid = await this.prisma.account.findUnique({
-      where: { username: data.username },
-    });
+  async login(user: any) {
+    const payload: JwtPayload = { username: user.username, sub: user.id };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
 
-    if (isUserValid) {
+  async validateUserByJwt(payload: JwtPayload): Promise<any> {
+    const user = await this.prisma.account.findUnique({ where: { id: payload.sub } });
+    if (user) {
+      const { password, ...result } = user;
+      return result;
+    }
+    return null;
+  }
+
+  async create(createAuthDto: { username: string; password: string; email: string; name: string; contact: string }) {
+    const { username, password, email, name, contact } = createAuthDto;
+
+    const existingUser = await this.prisma.account.findUnique({ where: { username } });
+    if (existingUser) {
       throw new ConflictException('Username already in use');
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await this.prisma.account.create({
       data: {
-        username: data.username,
-        password: hashPassword,
+        username,
+        password: hashedPassword,
       },
     });
 
-    const customer = await this.prisma.customers.create({
+    await this.prisma.customers.create({
       data: {
-        name: data.name,
-        email: data.email,
-        contact: data.contact,
+        name,
+        email,
+        contact,
         accountId: user.id,
       },
     });
 
     return {
-      statusCode: HttpStatus.CREATED,
       message: 'Account created successfully',
-      user: user,
-    };
-  }
-
-  async validateUser(loginDto: CreateAuthDto) {
-    const isUserValid = await this.prisma.account.findFirst({
-      where: { username: loginDto.username },
-    });
-
-    if (!isUserValid) {
-      throw new NotFoundException(
-        `No user found for this username: ${loginDto.username}`,
-      );
-    }
-
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      isUserValid.password,
-    );
-
-    if (loginDto.password.length < 6) {
-      throw new UnauthorizedException('Password must be at least 6 characters');
-    }
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid password, try again');
-    }
-
-    const user = await this.prisma.account.findFirst({
-      where: { id: isUserValid.id },
-    });
-
-    return {
-      message: `Hello, ${user.username}`,
-    };
-  }
-
-  async login(loginDto: CreateAuthDto) {
-    const isUserValid = await this.prisma.account.findFirst({
-      where: { username: loginDto.username },
-    });
-
-    if (!isUserValid) {
-      throw new NotFoundException(
-        `No user found for this username: ${loginDto.username}`,
-      );
-    }
-
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      isUserValid.password,
-    );
-
-    if (loginDto.password.length < 6) {
-      throw new UnauthorizedException('Password must be at least 6 characters');
-    }
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid password, try again');
-    }
-
-    return {
-      message: `Login successful, welcome ${isUserValid.username}`,
+      user,
     };
   }
 }

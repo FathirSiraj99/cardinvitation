@@ -11,9 +11,12 @@ import { AuthModule } from './auth/auth.module';
 import { PictureModule } from './picture/picture.module';
 import { WeddingsModule } from './weddings/weddings.module';
 import { APP_PIPE } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [CustomersModule, OrdersModule, PaymentModule, GuestModule, CommentModule, AuthModule, PictureModule, WeddingsModule],
+  imports: [CustomersModule, OrdersModule, PaymentModule, GuestModule, CommentModule, AuthModule, PictureModule, WeddingsModule, ConfigModule.forRoot({
+    isGlobal: true,
+  })],
   controllers: [AppController],
   providers: [AppService, PrismaService,{
     provide: APP_PIPE,
