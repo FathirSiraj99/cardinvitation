@@ -13,13 +13,21 @@ model customers {
     email   String
     contact String
 
-    weddingsId wedings[]
-    commentId  comment[]
-    pictureId  picture[]
-    ordersId   orders[]
-    guestId    guest[]
-    account    account?  @relation(fields: [accountId], references: [id])
-    accountId  String?
+    weddingId wedings?
+    commentId comment[]
+    pictureId picture[]
+    ordersId  orders[]
+    guestId   guest[]
+    account   account?  @relation(fields: [accountId], references: [id])
+    accountId String    @unique
+}
+
+model account {
+    id       String @id @default(uuid())
+    username String @unique
+    password String
+
+    customerId customers?
 }
 
 model orders {
@@ -60,14 +68,6 @@ model comment {
     customersId String?
 }
 
-model account {
-    id       String @id @default(uuid())
-    username String @unique
-    password String
-
-    customerId customers[]
-}
-
 model wedings {
     id                   Int        @id @default(autoincrement())
     npw                  String     @unique
@@ -75,8 +75,8 @@ model wedings {
     tgl_nikah            String
     lokasi_koordinat     String
     link_google_calender String
-    customers            customers? @relation(fields: [customersId], references: [id])
-    customersId          String?
+    customer             customers? @relation(fields: [customerId], references: [id])
+    customerId           String     @unique
 }
 
 model picture {

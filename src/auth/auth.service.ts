@@ -1,34 +1,79 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './interface/jwt-payload.interface';
+import { Customer } from 'src/customers/entities/customer.entity';
+import { CreateAuthDto } from './dto/create-auth.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.prisma.account.findUnique({ where: { username } });
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...result } = user;
-      return result;
+    const user = await this.prisma.account.findUnique({
+      where: { username: username },
+    });
+    if (!user) {
+      console.error(`User not found: ${username}`);
+      throw new NotFoundException(`No user found for username: ${username}`);
     }
-    return null;
+
+    if (!user.password) {
+      console.error(`Password is missing for user: ${username}`);
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      console.error('Invalid password');
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const { password: pwd, ...result } = user;
+    return result;
   }
 
-  async login(user: any) {
-    const payload: JwtPayload = { username: user.username, sub: user.id };
+  async login(createAuthDto: CreateAuthDto) {
+    const user = await this.validateUser(
+      createAuthDto.username,
+      createAuthDto.password,
+    );
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const customer = await this.prisma.customers.findFirst({
+      where: { accountId: user.id },
+    });
+
+    if (!customer) {
+      console.error('Customer not found for account ID:', user.id);
+      throw new NotFoundException('Customer not found');
+    }
+
+    const payload: JwtPayload = {
+      username: user.username,
+      sub: user.id,
+      custId: customer.id,
+    };
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
   async validateUserByJwt(payload: JwtPayload): Promise<any> {
-    const user = await this.prisma.account.findUnique({ where: { id: payload.sub } });
+    const user = await this.prisma.account.findUnique({
+      where: { id: payload.sub },
+    });
     if (user) {
       const { password, ...result } = user;
       return result;
@@ -36,18 +81,28 @@ export class AuthService {
     return null;
   }
 
-  async create(createAuthDto: { username: string; password: string; email: string; name: string; contact: string }) {
+  async create(createAuthDto: {
+    username: string;
+    password: string;
+    email: string;
+    name: string;
+    contact: string;
+  }) {
     const { username, password, email, name, contact } = createAuthDto;
 
-    const existingUser = await this.prisma.account.findUnique({ where: { username } });
+    const existingUser = await this.prisma.account.findUnique({
+      where: { username: username },
+    });
+
     if (existingUser) {
       throw new ConflictException('Username already in use');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await this.prisma.account.create({
       data: {
-        username,
+        username: username,
         password: hashedPassword,
       },
     });
