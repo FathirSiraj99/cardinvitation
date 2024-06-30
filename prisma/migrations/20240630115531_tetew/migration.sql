@@ -69,6 +69,7 @@ CREATE TABLE "wedings" (
     "tgl_nikah" TEXT NOT NULL,
     "lokasi_koordinat" TEXT NOT NULL,
     "link_google_calender" TEXT NOT NULL,
+    "customersId" TEXT,
 
     CONSTRAINT "wedings_pkey" PRIMARY KEY ("id")
 );
@@ -109,6 +110,9 @@ ALTER TABLE "comment" ADD CONSTRAINT "comment_guestId_fkey" FOREIGN KEY ("guestI
 
 -- AddForeignKey
 ALTER TABLE "comment" ADD CONSTRAINT "comment_customersId_fkey" FOREIGN KEY ("customersId") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "wedings" ADD CONSTRAINT "wedings_customersId_fkey" FOREIGN KEY ("customersId") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "picture" ADD CONSTRAINT "picture_customersId_fkey" FOREIGN KEY ("customersId") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;

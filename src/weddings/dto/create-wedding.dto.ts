@@ -2,6 +2,7 @@ import { OmitType } from "@nestjs/mapped-types";
 import { Wedding } from "../entities/wedding.entity";
 
 export class CreateWeddingDto extends OmitType(Wedding,['id']) {
+    customersId: string;
     npp: string;
     npw: string;
     tgl_nikah: string;

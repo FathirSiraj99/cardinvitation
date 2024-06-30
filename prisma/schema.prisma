@@ -8,16 +8,18 @@ datasource db {
 }
 
 model customers {
-    id        String    @id @default(uuid())
-    name      String
-    email     String
-    contact   String
-    commentId comment[]
-    pictureId picture[]
-    ordersId  orders[]
-    guestId   guest[]
-    account   account?  @relation(fields: [accountId], references: [id])
-    accountId String?
+    id      String @id @default(uuid())
+    name    String
+    email   String
+    contact String
+
+    weddingsId wedings[]
+    commentId  comment[]
+    pictureId  picture[]
+    ordersId   orders[]
+    guestId    guest[]
+    account    account?  @relation(fields: [accountId], references: [id])
+    accountId  String?
 }
 
 model orders {
@@ -67,12 +69,14 @@ model account {
 }
 
 model wedings {
-    id                   Int    @id @default(autoincrement())
-    npw                  String @unique
-    npp                  String @unique
+    id                   Int        @id @default(autoincrement())
+    npw                  String     @unique
+    npp                  String     @unique
     tgl_nikah            String
     lokasi_koordinat     String
     link_google_calender String
+    customers            customers? @relation(fields: [customersId], references: [id])
+    customersId          String?
 }
 
 model picture {
