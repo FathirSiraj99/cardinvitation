@@ -10,17 +10,36 @@ import { CommentModule } from './comment/comment.module';
 import { AuthModule } from './auth/auth.module';
 import { PictureModule } from './picture/picture.module';
 import { WeddingsModule } from './weddings/weddings.module';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { RolesGuard } from './auth/guard/roles.guard';
 
 @Module({
-  imports: [CustomersModule, OrdersModule, PaymentModule, GuestModule, CommentModule, AuthModule, PictureModule, WeddingsModule, ConfigModule.forRoot({
-    isGlobal: true,
-  })],
+  imports: [
+    CustomersModule,
+    OrdersModule,
+    PaymentModule,
+    GuestModule,
+    CommentModule,
+    AuthModule,
+    PictureModule,
+    WeddingsModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+  ],
   controllers: [AppController],
-  providers: [AppService, PrismaService,{
-    provide: APP_PIPE,
-    useClass: ValidationPipe,
-  }],
+  providers: [
+    AppService,
+    PrismaService,
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

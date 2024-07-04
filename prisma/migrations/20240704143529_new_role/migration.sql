@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "role" AS ENUM ('CUSTOMER', 'ADMIN', 'SUPERADMIN');
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'BRONZE', 'SILVER', 'GOLD');
 
 -- CreateTable
 CREATE TABLE "customers" (
@@ -7,9 +7,19 @@ CREATE TABLE "customers" (
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "contact" TEXT NOT NULL,
-    "accountId" TEXT,
+    "accountId" TEXT NOT NULL,
 
     CONSTRAINT "customers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "account" (
+    "id" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "role" "Role" NOT NULL,
+
+    CONSTRAINT "account_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -53,15 +63,6 @@ CREATE TABLE "comment" (
 );
 
 -- CreateTable
-CREATE TABLE "account" (
-    "id" TEXT NOT NULL,
-    "username" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-
-    CONSTRAINT "account_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "wedings" (
     "id" SERIAL NOT NULL,
     "npw" TEXT NOT NULL,
@@ -69,7 +70,12 @@ CREATE TABLE "wedings" (
     "tgl_nikah" TEXT NOT NULL,
     "lokasi_koordinat" TEXT NOT NULL,
     "link_google_calender" TEXT NOT NULL,
-    "customersId" TEXT,
+    "nama_orang_tua_ayah" TEXT NOT NULL,
+    "nama_orang_tua_ibu" TEXT NOT NULL,
+    "waktu_pernikahan" TEXT NOT NULL,
+    "digital_gift" TEXT NOT NULL,
+    "tempat_pernikahan" TEXT NOT NULL,
+    "customerId" TEXT NOT NULL,
 
     CONSTRAINT "wedings_pkey" PRIMARY KEY ("id")
 );
@@ -85,6 +91,9 @@ CREATE TABLE "picture" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "customers_accountId_key" ON "customers"("accountId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "account_username_key" ON "account"("username");
 
 -- CreateIndex
@@ -93,8 +102,11 @@ CREATE UNIQUE INDEX "wedings_npw_key" ON "wedings"("npw");
 -- CreateIndex
 CREATE UNIQUE INDEX "wedings_npp_key" ON "wedings"("npp");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "wedings_customerId_key" ON "wedings"("customerId");
+
 -- AddForeignKey
-ALTER TABLE "customers" ADD CONSTRAINT "customers_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "customers" ADD CONSTRAINT "customers_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_customersId_fkey" FOREIGN KEY ("customersId") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -112,7 +124,7 @@ ALTER TABLE "comment" ADD CONSTRAINT "comment_guestId_fkey" FOREIGN KEY ("guestI
 ALTER TABLE "comment" ADD CONSTRAINT "comment_customersId_fkey" FOREIGN KEY ("customersId") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "wedings" ADD CONSTRAINT "wedings_customersId_fkey" FOREIGN KEY ("customersId") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "wedings" ADD CONSTRAINT "wedings_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "picture" ADD CONSTRAINT "picture_customersId_fkey" FOREIGN KEY ("customersId") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;

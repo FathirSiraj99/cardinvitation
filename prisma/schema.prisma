@@ -26,6 +26,7 @@ model account {
     id       String @id @default(uuid())
     username String @unique
     password String
+    role     Role
 
     customerId customers?
 }
@@ -69,14 +70,20 @@ model comment {
 }
 
 model wedings {
-    id                   Int        @id @default(autoincrement())
-    npw                  String     @unique
-    npp                  String     @unique
+    id                   Int    @id @default(autoincrement())
+    npw                  String @unique
+    npp                  String @unique
     tgl_nikah            String
     lokasi_koordinat     String
     link_google_calender String
-    customer             customers? @relation(fields: [customerId], references: [id])
-    customerId           String     @unique
+    nama_orang_tua_ayah  String
+    nama_orang_tua_ibu   String
+    waktu_pernikahan     String
+    digital_gift         String
+    tempat_pernikahan    String
+
+    customer   customers? @relation(fields: [customerId], references: [id])
+    customerId String     @unique
 }
 
 model picture {
@@ -88,8 +95,9 @@ model picture {
     customersId String?
 }
 
-enum role {
-    CUSTOMER
+enum Role {
     ADMIN
-    SUPERADMIN
+    BRONZE
+    SILVER
+    GOLD
 }

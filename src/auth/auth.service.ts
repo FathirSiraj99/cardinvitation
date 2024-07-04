@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './interface/jwt-payload.interface';
 import { Customer } from 'src/customers/entities/customer.entity';
 import { CreateAuthDto } from './dto/create-auth.dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<any> {
+  async validateUser(username: string, password: string, role : string): Promise<any> {
     const user = await this.prisma.account.findUnique({
       where: { username: username },
     });
@@ -46,6 +47,7 @@ export class AuthService {
     const user = await this.validateUser(
       createAuthDto.username,
       createAuthDto.password,
+      createAuthDto.role
     );
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -64,6 +66,7 @@ export class AuthService {
       username: user.username,
       sub: user.id,
       custId: customer.id,
+      role : user.role
     };
     return {
       access_token: this.jwtService.sign(payload),
@@ -87,8 +90,9 @@ export class AuthService {
     email: string;
     name: string;
     contact: string;
+    role : Role;
   }) {
-    const { username, password, email, name, contact } = createAuthDto;
+    const { username, password, email, name, contact , role } = createAuthDto;
 
     const existingUser = await this.prisma.account.findUnique({
       where: { username: username },
@@ -104,6 +108,7 @@ export class AuthService {
       data: {
         username: username,
         password: hashedPassword,
+        role : role,
       },
     });
 

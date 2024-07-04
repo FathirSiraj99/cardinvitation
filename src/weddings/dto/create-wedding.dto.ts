@@ -8,4 +8,8 @@ export class CreateWeddingDto extends OmitType(Wedding,['id']) {
     tgl_nikah: string;
     lokasi_koordinat: string;
     link_google_calender: string;
+    waktu_pernikahan: string;
+    nama_orang_tua_ayah: string;
+    nama_orang_tua_ibu: string;
+    tempat_pernikahan: string;
 }
